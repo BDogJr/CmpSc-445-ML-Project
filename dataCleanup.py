@@ -2,8 +2,11 @@ import pickle
 import string
 import numpy as np
 import matplotlib.pyplot as plt
+import mido
+from midi2audio import FluidSynth
 
 # Source for midi to : https://pypi.org/project/midi2audio/
+# https://gist.github.com/jiaaro/339df443b005e12d6c2a
 
 class Song:
     # A list of meausures converted to matrices. corresponds to samples
@@ -16,6 +19,9 @@ class Song:
     def __init__(self, midi):
         self.midiFile = midi
 
+    # Place holder constructor so Song objects can be made without providing a midi file
+    def __init__(self):
+        self.temp = 0
 
     def getState(self, track_messageString, lastState):
         """Convert track_messageString to a dictionary"""
@@ -98,7 +104,7 @@ class Song:
 
         maxLength = max(trackListLengths)
 
-        # Ensure that all multidimmentional lists have the same dimmensions
+        # Ensure that all multidimensional lists have the same dimmensions
         for i in range(len(trackLists)):
             if(len(trackLists[i]) < maxLength):
                 trackLists[i] += [[0] * 88] * (maxLength - len(trackLists[i]))
@@ -113,11 +119,53 @@ class Song:
         self.featureVector = trackArrays[min(endPoints): max(endPoints)]
 
 
-    def featureVector_toMidi(self):
-        test = 0
+    def featureVector_toMidi(self, encodedArray):
+
+        tempList = [np.array([[0] * 88]), np.array(encodedArray)]
+        tempArray = np.concatenate(tempList, axis = 0)
+        differences = tempArray[1:] - tempArray[:-1]
+
+        """Prep midi new file"""
+        midi = mido.MidiFile() # Create midi file
+        midiTrack = mido.MidiTrack() # Create midi track
+        midi.tracks.append(midiTrack) # Add a new track
+        # Set tempo to 500000
+        midiTrack.append(mido.MetaMessage('set_tempo', tempo = 500000, time = 0))
+
+        """Account for the differences in midiTrack"""
+        prevTime = 0
+        for d in differences:
+            if(set(d) == {0}): # There is no difference
+                prevTime += 1
+            else:
+                onNotes = np.where(d > 0)[0]
+                notesVelocity = d[onNotes]
+                offNotes = np.where(d < 0)[0]
+                firstNote = True
+
+                """Generate appropriate tracks"""
+                for note,vel in zip(onNotes, notesVelocity): # Cycle through onNotes
+                    updatedTime = 0
+                    if (firstNote == True): # Do not update time for first note
+                        updatedTime = prevTime
+
+                    midiTrack.append(mido.Message('note_on', note = note + 21, velocity = vel, time = updatedTime))
+                    firstNote = False
+
+                for note in offNotes: # Cycle through offNotes
+                    updatedTime = 0
+                    if (firstNote == True):  # Do not update time for first note
+                        updatedTime = prevTime
+
+                    midiTrack.append(mido.Message('note_off', note = note + 21, velocity = 0, time = updatedTime))
+                    firstNote = False
+
+                prevTime = 0
+        return midi
 
     def midiToAudio(self):
         test = 0
+
 
     def plotMidi(self, sampleNumber):
 
@@ -132,19 +180,18 @@ class Song:
 
 if __name__ == '__main__':
 
-    """Test
-    with open('testFiles', 'rb') as file:
-        testFiles = pickle.load(file)
+    with open('testDataset', 'rb') as f:
+        test = pickle.load(f)
 
-    testSong = Song(testFiles[5])
-    testSong.generateFeatureVector()
-    testSong.plotMidi(5)
+    testFeatureVect = test[7]
+    midi = testFeatureVect.featureVector_toMidi(testFeatureVect.featureVector)
+    midi.save("testSongConversion1.mid")
+
     """
-
     with open('rawMidiFiles', 'rb') as f:
         rawMidiFiles = pickle.load(f)
 
-    """Plot a few feature vectors
+    Plot a few feature vectors
     song1 = Song(rawMidiFiles[5])
     song1.generateFeatureVector()
     song1.plotMidi(5)
@@ -164,19 +211,19 @@ if __name__ == '__main__':
     song5 = Song(rawMidiFiles[25])
     song5.generateFeatureVector()
     song5.plotMidi(25)
-    """
+    
     i = 0
     completeDataset = []
     print(len(rawMidiFiles))
-    for midiFile in rawMidiFiles[0:2500]:
+    for midiFile in rawMidiFiles[0:1500]:
         song = Song(midiFile)
         song.generateFeatureVector()
         completeDataset.append(song)
         print("Success", i)
         i += 1
 
-    with open('completeDataset_1', 'wb') as f:
+    with open('completeDataset(0_1500)', 'wb') as f:
         pickle.dump(np.array(completeDataset), f)
-
+    """
         
         
