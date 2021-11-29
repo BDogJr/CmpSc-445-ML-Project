@@ -12,6 +12,10 @@ import time
 import pygame
 from PIL import ImageTk, Image
 # import mido
+from loading_script import get_song_seed, generate_song
+from dataCleanup import Song
+import numpy as np
+import pandas as pd
 
 '''
 @ Skyler Voege
@@ -71,13 +75,18 @@ def playSound(Song):
 
 
 # buffer main
-def showOptions():
-    # output for MP3 (From ML)
-    passMP3 = "Test.mp3"
+def showOptions(genres):
+    # get seed and array
+    song_seed = get_song_seed(genres, ranges)
+    arrayToSong = generate_song(song_seed, maxs, mins)
+    song = Song()
+    passMIDI = song.featureVector_toMidi(arrayToSong)
+    passMIDI.save('songGenerated.mid')
+
+    # send to get Mp3
+    passMP3 = song.midiToAudio(arrayToSong)
     playSound(passMP3)
     print(passMP3)
-    # output for MIDI (From ML)
-    passMIDI = ""
     downloadMIDI()
 
 
@@ -91,30 +100,34 @@ def dummyValue():
 # show all buttons for options
 def UserButtons():
     # button for selection
-    frame_a = Frame()
+    frame_a = Frame(background=bgColor)
     button = Button(master=frame_a, text="Boss Fight", background=bgColor, fg="purple", font=("Arial", textSize),
-                    command=lambda: [dummyValue(), showOptions()])
+                    command=lambda: [dummyValue(), showOptions(0)])
     button.grid(row=2, column=0)
 
     button1 = Button(master=frame_a, text="Spooky", background=bgColor, fg="purple", font=("Arial", textSize),
-                     command=lambda: [dummyValue(), showOptions()])
+                     command=lambda: [dummyValue(), showOptions(1)])
     button1.grid(row=2, column=1)
 
     button2 = Button(master=frame_a, text="Adventurous", background=bgColor, fg="purple", font=("Arial", textSize),
-                     command=lambda: [dummyValue(), showOptions()])
+                     command=lambda: [dummyValue(), showOptions(2)])
     button2.grid(row=2, column=2)
 
     button3 = Button(master=frame_a, text="Upbeat Overworld", background=bgColor, fg="purple", font=("Arial", textSize),
-                     command=lambda: [dummyValue(), showOptions()])
+                     command=lambda: [dummyValue(), showOptions(3)])
     button3.grid(row=2, column=3)
 
-    button2 = Button(master=frame_a, text="Ominous", background=bgColor, fg="purple", font=("Arial", textSize),
-                     command=lambda: [dummyValue(), showOptions()])
-    button2.grid(row=2, column=4)
+    button4 = Button(master=frame_a, text="Ominous", background=bgColor, fg="purple", font=("Arial", textSize),
+                     command=lambda: [dummyValue(), showOptions(4)])
+    button4.grid(row=3, column=1)
 
-    button3 = Button(master=frame_a, text="Calm Overworld", background=bgColor, fg="purple", font=("Arial", textSize),
-                     command=lambda: [dummyValue(), showOptions()])
-    button3.grid(row=2, column=5)
+    button5 = Button(master=frame_a, text="Calm Overworld", background=bgColor, fg="purple", font=("Arial", textSize),
+                     command=lambda: [dummyValue(), showOptions(5)])
+    button5.grid(row=3, column=2)
+
+    button6 = Button(master=frame_a, text=" Overworld", background=bgColor, fg="purple", font=("Arial", textSize),
+                     command=lambda: [dummyValue(), showOptions(6)])
+    button6.grid(row=3, column=3)
     frame_a.pack()
 
 
@@ -165,4 +178,14 @@ if __name__ == "__main__":
     frame_d = Frame()
     # frame for Dummy
     frame_z = Frame()
+
+    # feature_ranges.csv
+    ranges = pd.read_csv('feature_ranges.csv')
+    ranges = ranges.to_numpy()
+    # Maxs.csv and Mins.csv
+    maxs = pd.read_csv('Maxs.csv')
+    mins = pd.read_csv('Mins.csv')
+    del maxs['Unnamed: 0']
+    del mins['Unnamed: 0']
+
     main()

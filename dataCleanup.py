@@ -162,13 +162,13 @@ class Song:
         midiTrack = mido.MidiTrack() # Create midi track
         midi.tracks.append(midiTrack) # Add a new track
         # Set tempo to 500000
-        midiTrack.append(mido.MetaMessage('set_tempo', tempo = 500000, time = 0))
+        midiTrack.append(mido.MetaMessage('set_tempo', tempo = 100, time = 0))
 
         # Account for the differences in midiTrack
         prevTime = 0
         for d in differences:
             if(set(d) == {0}): # There is no difference
-                prevTime += 1
+                prevTime += 30
             else:
                 onNotes = np.where(d > 0)[0]
                 notesVelocity = d[onNotes]
