@@ -20,10 +20,10 @@ import matplotlib.pyplot as plt
 # All the encoders and decoders: The file path will need to be edited
 
 measureDecoder = load_model(
-    '/Users/mbp/Documents/Penn State/Fall 2021/CMPSC 445/pythonProject/GUI/venv/measureDecoder.tf')
+    'C:\\Users\\Brayden Peoples\\OneDrive\\Documents\\Python\\Scripts\\Applied Machine Learning\\FInal Project\\measureDecoder.tf')
 
 songDecoder = load_model(
-    '/Users/mbp/Documents/Penn State/Fall 2021/CMPSC 445/pythonProject/GUI/venv/songDecoder.tf')
+    'C:\\Users\\Brayden Peoples\\OneDrive\\Documents\\Python\\Scripts\\Applied Machine Learning\\FInal Project\\songDecoder.tf')
 
 
 # These two functions:
@@ -50,19 +50,35 @@ def generate_song(seed, maxs, mins):
     for i in range(16):
         ret.append(np.reshape(new_song[i], (96, 88)))
 
-    ret=np.concatenate(ret, axis=0).astype(int)*100
-    for i in range(1536):
-        if sum(ret[i]>=6):
-            notes=np.argwhere(ret[i]==1)
-            for j in range(len(notes)-2):
-                prob=uniform(0,1)
-                if prob<.5:
-                    ret[i][notes[j+1]]=0
-
+    ret=np.concatenate(ret,axis=0).astype(int)*100
+    
+    #If timestep has excess notes in it, remove some of them
+    # for i in range(1536):
+    #     if sum(ret[i]>=6):
+    #         notes=np.argwhere(ret[i]==1)
+    #         for j in range(len(notes)-2):
+    #             prob=uniform(0,1)
+    #             if prob<.5:
+    #                 ret[i][notes[j+1]]=0
+    
+    
+    for i in range(1531):
+        for j in range(88):
+            if ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==1 and ret[i+3][j]==1 and ret[i+4][j]==1 and ret[i+1][j]==0:
+                ret[i+1][j]=0
+                ret[i+2][j]=0
+                ret[i+3][j]=0
+                ret[i+4][j]=0
+            elif ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==1 and ret[i+3][j]==1 and ret[i+4][j]==0:
+                ret[i+1][j]=0
+                ret[i+2][j]=0
+                ret[i+3][j]=0
+            elif ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==1 and ret[i+3][j]==0:
+                ret[i+1][j]=0
+                ret[i+2][j]=0
+            elif ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==0:
+                ret[i+1][j]=0
     return ret
-    # at this point, new_song has lots of values very close to 0, but not 0. Try cleaning up file
-    # by including, excluding, or selectively including them to what the output is. Possibly choose to
-    # include them randomly
 
 
 # feature_ranges.csv
