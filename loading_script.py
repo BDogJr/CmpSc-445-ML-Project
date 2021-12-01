@@ -62,9 +62,15 @@ def generate_song(seed, maxs, mins):
     #                 ret[i][notes[j+1]]=0
     
     
-    for i in range(1531):
+    for i in range(1530):
         for j in range(88):
-            if ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==1 and ret[i+3][j]==1 and ret[i+4][j]==1 and ret[i+1][j]==0:
+            if ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==1 and ret[i+3][j]==1 and ret[i+4][j]==1 and ret[i+5][j]==1 and ret[i+6]==0:
+                ret[i+1][j]=0
+                ret[i+2][j]=0
+                ret[i+3][j]=0
+                ret[i+4][j]=0
+                ret[i+5][j]=0
+            elif ret[i][j]==0 and ret[i+1][j]==1 and ret[i+2][j]==1 and ret[i+3][j]==1 and ret[i+4][j]==1 and ret[i+5][j]==0:
                 ret[i+1][j]=0
                 ret[i+2][j]=0
                 ret[i+3][j]=0
