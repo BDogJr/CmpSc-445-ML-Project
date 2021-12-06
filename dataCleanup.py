@@ -162,13 +162,13 @@ class Song:
         midiTrack = mido.MidiTrack() # Create midi track
         midi.tracks.append(midiTrack) # Add a new track
         # Set tempo to 500000
-        midiTrack.append(mido.MetaMessage('set_tempo', tempo = 100, time = 0))
+        midiTrack.append(mido.MetaMessage('set_tempo', tempo = 60, time = 0))
 
         # Account for the differences in midiTrack
         prevTime = 0
         for d in differences:
             if(set(d) == {0}): # There is no difference
-                prevTime += 30
+                prevTime += 150
             else:
                 onNotes = np.where(d > 0)[0]
                 notesVelocity = d[onNotes]
@@ -259,43 +259,19 @@ Main function that performs the following tasks:
     2. Generates a Song object and corresponding feature vector for each mido object
     3. Saves each Song object to a list and saves the resulting list to a bytes file 
 """
-if __name__ == '__main__':
 
-    with open('testFiles', 'rb') as f:
-        rawMidiFiles = pickle.load(f)
-
-    """Plot a few feature vectors
-    song1 = Song(rawMidiFiles[5])
-    song1.generateFeatureVector()
-    song1.plotMidi(5)
-
-    song2 = Song(rawMidiFiles[10])
-    song2.generateFeatureVector()
-    song2.plotMidi(10)
-
-    song3 = Song(rawMidiFiles[15])
-    song3.generateFeatureVector()
-    song3.plotMidi(15)
-
-    song4 = Song(rawMidiFiles[20])
-    song4.generateFeatureVector()
-    song4.plotMidi(20)
-
-    song5 = Song(rawMidiFiles[25])
-    song5.generateFeatureVector()
-    song5.plotMidi(25)
-    """
+        
+            
+def makeMeasures(song):
+    numMeasures=len(song.featureVector)//96
+    measures=[]
+    for i in range(numMeasures):
+        endpoints=[0+i*96,96+i*96]
+        try:
+            newMeasure=song.featureVector[:][endpoints[0]:endpoints[1]]
+        except IndexError():
+            newMeasure=song.featureVector[:][endpoints[0]:]
+            
+        measures.append(newMeasure)
     
-    i = 0 # Helps keep track of progress
-    completeDataset = []
-    for midiFile in rawMidiFiles:
-        song = Song(midiFile)
-        song.generateFeatureVector()
-        completeDataset.append(song)
-        print("Success", i) # Print progress
-        i += 1
-
-    with open('completeDataset', 'wb') as f:
-        pickle.dump(np.array(completeDataset), f)
-        
-        
+    return measures
