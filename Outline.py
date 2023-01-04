@@ -20,7 +20,8 @@ from sklearn.metrics import accuracy_score
 #Extract the measures from the song objects. featureVectors is a list of 
 # arrays. Each array contains 96x88 matrices representing the measures 
 # in a song.
-featureVectors=[makeMeasures(testFiles[i]) for i in range(len(testFiles))]
+
+featureVectors = measures #measures was defined in dataPrep.py
 
 #Reshape the measures and stack them. The resulting array is of shape
 # (numMeasures, 8448), numMeasures is sum of measures of all songs.
